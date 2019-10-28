@@ -1,0 +1,94 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "Andy Collins",
+    "version": "1.0.1",
+    "title": "ado_queries",
+    "contact": {
+      "email": "andy.collins@thomsonreuters.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "tags": [
+    {
+      "name": "ADO Queries",
+      "description": "Example API for calling into the ADO API and getting specific and deeper information"
+    }
+  ],
+  "paths": {
+    "/ado_queries/api/v1.0/workitem": {
+      "post": {
+        "tags": [
+          "Get the ADO work item record for a specific work item "
+        ],
+        "summary": "Returns work item data",
+        "requestBody": {
+          "description": "ADO Work Item Request POST Object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/workItemRequestPostBody"
+              }
+            }
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/ado_queries/api/v1.0/history": {
+      "post": {
+        "tags": [
+          "Work Item History Request"
+        ],
+        "summary": "Returns the history of a work item",
+        "requestBody": {
+          "description": "ADO Work Item Request POST Object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/workItemRequestPostBody"
+              }
+            }
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "workItemRequestPostBody": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "format": "string"
+          },
+          "workitemid": {
+            "type": "string",
+            "format": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import flask
 import adoapi
+from flask_swagger_ui import get_swaggerui_blueprint
 
 app = flask.Flask(__name__)
 base_route = "/ado_queries/api"
@@ -28,6 +29,19 @@ def get_history():
     workitem = flask.request.json["workitemid"]
     response = adoapi.AdoApi.GetWorkItemHistory(token, workitem)
     return flask.jsonify(response)
+
+### swagger specific ###
+SWAGGER_URL = '/swagger'
+API_URL = '/static/swagger.json'
+SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={
+        'app_name': "ado_queries"
+    }
+)
+app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
+### end swagger specific ###
 
 if (__name__ == "__main__"):
     app.run(debug=True)
