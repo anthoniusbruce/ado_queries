@@ -3,31 +3,46 @@ import adoapi
 from flask_swagger_ui import get_swaggerui_blueprint
 
 app = flask.Flask(__name__)
-base_route = "/ado_queries/api"
+ado_base_route = "/ado_queries/api"
+tfs_base_route = "/tfs_queries/api"
 
 @app.route("/")
 def index():
     return "Status: Up!"
 
-@app.route(base_route + "/v1.0/test", methods = ["POST"])
+@app.route(ado_base_route + "/v1.0/test", methods = ["POST"])
 def get_onbalance_story_and_task_history():
     querypath = flask.request.json["path"]
     token = flask.request.json["token"]
-    history = adoapi.AdoApi.GetTest(token, querypath)
+    history = adoapi.AdoApi.AdoGetTest(token, querypath)
     return flask.jsonify(history)
     
-@app.route(base_route+"/v1.0/workitem", methods=["POST"])
+@app.route(ado_base_route+"/v1.0/workitem", methods=["POST"])
 def get_workitem():
     token = flask.request.json["token"]
     workitem = flask.request.json["workitemid"]
-    response = adoapi.AdoApi.GetWorkItem(token, workitem)
+    response = adoapi.AdoApi.AdoGetWorkItem(token, workitem)
     return flask.jsonify(response)
 
-@app.route(base_route+"/v1.0/history", methods=["POST"])
+@app.route(ado_base_route+"/v1.0/history", methods=["POST"])
 def get_history():
     token = flask.request.json["token"]
     workitem = flask.request.json["workitemid"]
-    response = adoapi.AdoApi.GetWorkItemHistory(token, workitem)
+    response = adoapi.AdoApi.AdoGetWorkItemHistory(token, workitem)
+    return flask.jsonify(response)
+
+@app.route(tfs_base_route+"/v1.0/workitem", methods=["POST"])
+def get_tfs_workitem():
+    token = flask.request.json["token"]
+    workitem = flask.request.json["workitemid"]
+    response = adoapi.AdoApi.TfsGetWorkItem(token, workitem)
+    return flask.jsonify(response)
+
+@app.route(tfs_base_route+"/v1.0/history", methods=["POST"])
+def get_tfs_history():
+    token = flask.request.json["token"]
+    workitem = flask.request.json["workitemid"]
+    response = adoapi.AdoApi.TfsGetWorkItemHistory(token, workitem)
     return flask.jsonify(response)
 
 ### swagger specific ###

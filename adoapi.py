@@ -2,20 +2,18 @@ from azure.devops.connection import Connection
 from msrest.authentication import BasicAuthentication
 
 class AdoApi(object):
-    ORGANIZATION_URL = 'https://dev.azure.com/tr-tax'
+    ADO_ORGANIZATION_URL = 'https://dev.azure.com/tr-tax'
+    TFS_ORGANIZATION_URL = 'http://tfstta.int.thomsonreuters.com:8080/tfs/DefaultCollection'
     PROJECT_NAME = "TaxProf"
 
     @staticmethod
-    def _get_connection(token):
+    def _get_connection(token, org):
         credentials = BasicAuthentication('', token)
-        connection = Connection(base_url=AdoApi.ORGANIZATION_URL, creds=credentials)
+        connection = Connection(base_url=org, creds=credentials)
         return connection
 
     @staticmethod
-    def GetTest(token, querypath):
-        # Create a connection to the org
-        connection = AdoApi._get_connection(token)
-
+    def GetTest(connection, querypath):
         # get work item tracking client
         work_item_tracking = connection.clients.get_work_item_tracking_client()
 
@@ -27,18 +25,27 @@ class AdoApi(object):
         query_by_id_response = work_item_tracking.query_by_id(id)
         work_item_id = query_by_id_response.work_item_relations[1].target.id
 
-        #return work_item_tracking._serialize.body(query_by_id_response, 'WorkItemQueryResult')
-
         # Get History
         get_updates_response = work_item_tracking.get_updates(work_item_id)
 
         return work_item_tracking._serialize.body(get_updates_response, '[WorkItemUpdate]')
+        
+    @staticmethod
+    def AdoGetTest(token, querypath):
+        # Create a connection to the org
+        connection = AdoApi._get_connection(token, AdoApi.ADO_ORGANIZATION_URL)
+
+        return AdoApi.GetTest(connection, querypath)
 
     @staticmethod
-    def GetWorkItem(token, workitemid):
-        #create connection
-        connection = AdoApi._get_connection(token)
+    def TfsGetTest(token, querypath):
+        # Create a connection to the org
+        connection = AdoApi._get_connection(token, AdoApi.TFS_ORGANIZATION_URL)
 
+        return AdoApi.GetTest(connection, querypath)
+
+    @staticmethod    
+    def GetWorkItem(connection, workitemid):
         #get work item tracking client
         work_item_tracking = connection.clients.get_work_item_tracking_client()
 
@@ -48,10 +55,21 @@ class AdoApi(object):
         return work_item_tracking._serialize.body(work_item_response, 'WorkItem')
 
     @staticmethod
-    def GetWorkItemHistory(token, workitemid):
+    def AdoGetWorkItem(token, workitemid):
         #create connection
-        connection = AdoApi._get_connection(token)
+        connection = AdoApi._get_connection(token, AdoApi.ADO_ORGANIZATION_URL)
 
+        return AdoApi.GetWorkItem(connection, workitemid)
+
+    @staticmethod
+    def TfsGetWorkItem(token, workitemid):
+        #create connection
+        connection = AdoApi._get_connection(token, AdoApi.TFS_ORGANIZATION_URL)
+
+        return AdoApi.GetWorkItem(connection, workitemid)
+
+    @staticmethod
+    def GetWorkItemHistory(connection, workitemid):
         #get work item tracking client
         work_item_tracking = connection.clients.get_work_item_tracking_client()
 
@@ -59,3 +77,17 @@ class AdoApi(object):
         get_updates_response = work_item_tracking.get_updates(workitemid)
 
         return work_item_tracking._serialize.body(get_updates_response, '[WorkItemUpdate]')
+
+    @staticmethod
+    def AdoGetWorkItemHistory(token, workitemid):
+        #create connection
+        connection = AdoApi._get_connection(token, AdoApi.ADO_ORGANIZATION_URL)
+
+        return AdoApi.GetWorkItemHistory(connection, workitemid)
+
+    @staticmethod
+    def TfsGetWorkItemHistory(token, workitemid):
+        #create connection
+        connection = AdoApi._get_connection(token, AdoApi.TFS_ORGANIZATION_URL)
+
+        return AdoApi.GetWorkItemHistory(connection, workitemid)
