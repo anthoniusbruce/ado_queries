@@ -21,9 +21,6 @@
   "paths": {
     "/ado_queries/api/v1.0/workitem": {
       "post": {
-        "tags": [
-          "Get the ADO work item record for a specific work item "
-        ],
         "summary": "Returns work item data",
         "requestBody": {
           "description": "ADO Work Item Request POST Object",
@@ -48,12 +45,57 @@
     },
     "/ado_queries/api/v1.0/history": {
       "post": {
-        "tags": [
-          "Work Item History Request"
-        ],
         "summary": "Returns the history of a work item",
         "requestBody": {
           "description": "ADO Work Item Request POST Object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/workItemRequestPostBody"
+              }
+            }
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/tfs_queries/api/v1.0/workitem": {
+      "post": {
+        "summary": "Returns work item data",
+        "requestBody": {
+          "description": "TFS Work Item Request POST Object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/workItemRequestPostBody"
+              }
+            }
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/tfs_queries/api/v1.0/history": {
+      "post": {
+        "summary": "Returns the history of a work item",
+        "requestBody": {
+          "description": "TFS Work Item Request POST Object",
           "required": true,
           "content": {
             "application/json": {
