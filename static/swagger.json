@@ -43,59 +43,35 @@
         }
       }
     },
+    "/ado_queries/api/v1.0/cycletime": {
+      "post": {
+        "summary": "With a story query, will return a list of work item id, resolved date and first activated date for every story returned by the query",
+        "requestBody": {
+          "description": "ADO Query Request POST Object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/queryRequestPostBody"
+              }
+            }
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/ado_queries/api/v1.0/history": {
       "post": {
         "summary": "Returns the history of a work item",
         "requestBody": {
           "description": "ADO Work Item Request POST Object",
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/workItemRequestPostBody"
-              }
-            }
-          }
-        },
-        "produces": [
-          "application/json"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/tfs_queries/api/v1.0/workitem": {
-      "post": {
-        "summary": "Returns work item data",
-        "requestBody": {
-          "description": "TFS Work Item Request POST Object",
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/workItemRequestPostBody"
-              }
-            }
-          }
-        },
-        "produces": [
-          "application/json"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/tfs_queries/api/v1.0/history": {
-      "post": {
-        "summary": "Returns the history of a work item",
-        "requestBody": {
-          "description": "TFS Work Item Request POST Object",
           "required": true,
           "content": {
             "application/json": {
@@ -128,6 +104,20 @@
           "workitemid": {
             "type": "string",
             "format": "string"
+          }
+        }
+      },
+      "queryRequestPostBody": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "format": "string"
+          },
+          "path": {
+            "type": "string",
+            "format": "string",
+            "description": "path to a query that returns user stories, i.e. My Queries/OnBalance Closed Stories"
           }
         }
       }
