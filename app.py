@@ -1,5 +1,7 @@
 import flask
 import adoapi
+import cycle_time
+import cycle_time_jsonencoder
 from flask_swagger_ui import get_swaggerui_blueprint
 
 app = flask.Flask(__name__)
@@ -30,6 +32,15 @@ def get_history():
     workitem = flask.request.json["workitemid"]
     response = adoapi.AdoApi.AdoGetWorkItemHistory(token, workitem)
     return flask.jsonify(response)
+
+@app.route(ado_base_route+"/v1.0/cycletime", methods=["POST"])
+def get_cycle_time():
+    token = flask.request.json["token"]
+    querypath = flask.request.json["path"]
+    result = adoapi.AdoApi.AdoGetCycleTimeFromUserStoryQuery(token, querypath)
+    encoder = cycle_time_jsonencoder.CycleTimeJSONEncoder()
+    response = flask.Response(encoder.encode(result), mimetype="application/json")
+    return response
 
 @app.route(tfs_base_route+"/v1.0/workitem", methods=["POST"])
 def get_tfs_workitem():
