@@ -1,7 +1,9 @@
 import flask
 import adoapi
 import cycle_time
+import story_point_data
 import cycle_time_jsonencoder
+import story_point_data_jsonencoder
 from flask_swagger_ui import get_swaggerui_blueprint
 
 app = flask.Flask(__name__)
@@ -39,6 +41,15 @@ def get_cycle_time():
     querypath = flask.request.json["path"]
     result = adoapi.AdoApi.AdoGetCycleTimeFromUserStoryQuery(token, querypath)
     encoder = cycle_time_jsonencoder.CycleTimeJSONEncoder()
+    response = flask.Response(encoder.encode(result), mimetype="application/json")
+    return response
+
+@app.route(ado_base_route+"/v1.0/atfstorypoints", methods=["POST"])
+def get_aft_story_points():
+    token = flask.request.json["token"]
+    querypath = flask.request.json["path"]
+    result = adoapi.AdoApi.AdoGetAtfStorySizeFromUserStoryQuery(token, querypath)
+    encoder = story_point_data_jsonencoder.StoryPointDataJSONEncoder()
     response = flask.Response(encoder.encode(result), mimetype="application/json")
     return response
 
