@@ -67,6 +67,30 @@
         }
       }
     },
+    "/ado_queries/api/v1.0/atfstorypoints": {
+      "post": {
+        "summary": "With a story query, will return a list of work item id, resolved date and first activated date and after the fact story points for every story returned by the query",
+        "requestBody": {
+          "description": "ADO Query Request POST Object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/queryRequestPostBody"
+              }
+            }
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/ado_queries/api/v1.0/history": {
       "post": {
         "summary": "Returns the history of a work item",

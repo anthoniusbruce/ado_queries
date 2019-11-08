@@ -179,6 +179,31 @@ class AdoApi(object):
         return AdoApi.GetCycleTimeFromUserStoryQuery(connection, querypath)
 
     @staticmethod
+    def ConvertToPoints(total_seconds):
+        MAX_0 = 60
+        MAX_1 = 43200
+        MAX_2 = 172800
+        MAX_3 = 518400
+        MAX_5 = 864000
+        MAX_8 = 1728000
+
+        story_points = 13
+        if (total_seconds <= MAX_0):
+            story_points = 0
+        elif (total_seconds <= MAX_1):
+            story_points =  1
+        elif (total_seconds <= MAX_2):
+            story_points = 2
+        elif (total_seconds <= MAX_3):
+            story_points = 3
+        elif (total_seconds <= MAX_5):
+            story_points = 5
+        elif (total_seconds <= MAX_8):
+            story_points = 8
+
+        return story_points
+
+    @staticmethod
     def GetStoryPoints(story_points, ids, work_item_tracking):
         WorkItemTypeKey = "System.WorkItemType"
         CreatedDateKey = "System.CreatedDate"
@@ -227,7 +252,7 @@ class AdoApi(object):
                         if (date_resolved > date_activated):
                             points_total =  points_total + (date_resolved - date_activated)
 
-                points.storypoints = points_total.total_seconds()
+                points.storypoints = AdoApi.ConvertToPoints(points_total.total_seconds())
 
             story_points.append(points)
 
