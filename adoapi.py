@@ -9,6 +9,7 @@ class AdoApi(object):
     ADO_ORGANIZATION_URL = 'https://dev.azure.com/tr-tax'
     TFS_ORGANIZATION_URL = 'http://tfstta.int.thomsonreuters.com:8080/tfs/DefaultCollection'
     PROJECT_NAME = "TaxProf"
+    SaMBa = "SaMBa"
 
     @staticmethod
     def _get_connection(token, org):
@@ -17,46 +18,32 @@ class AdoApi(object):
         return connection
 
     @staticmethod
-    def GetTest(connection, querypath):
+    def GetTest(connection, querypath, projectname):
         # get work item tracking client
         work_item_tracking = connection.clients.get_work_item_tracking_client()
 
         # Get query
-        get_query_response = work_item_tracking.get_query(
-            AdoApi.PROJECT_NAME, querypath)
+        get_query_response = work_item_tracking.get_query(projectname, querypath)
         id = get_query_response.id
 
         # Get data
         query_by_id_response = work_item_tracking.query_by_id(id)
 
-        work_item_id = query_by_id_response.work_items[0].id
-
-        story_updates = work_item_tracking.get_updates(work_item_id)
-
-        activated_date = ""
-        activatedDateKey = "Microsoft.VSTS.Common.ActivatedDate"
-        for story_upd in story_updates:
-            if (not story_upd.fields is None and activatedDateKey in story_upd.fields):
-                act_date = story_upd.fields[activatedDateKey].new_value
-                if (not act_date is None):
-                    if (activated_date == "" or act_date < activated_date):
-                        activated_date = act_date
-
-        return activated_date
+        return work_item_tracking._serialize.body(query_by_id_response, 'WorkItemQueryResult')
 
     @staticmethod
     def AdoGetTest(token, querypath):
         # Create a connection to the org
         connection = AdoApi._get_connection(token, AdoApi.ADO_ORGANIZATION_URL)
 
-        return AdoApi.GetTest(connection, querypath)
+        return AdoApi.GetTest(connection, querypath, AdoApi.PROJECT_NAME)
 
     @staticmethod
     def TfsGetTest(token, querypath):
         # Create a connection to the org
         connection = AdoApi._get_connection(token, AdoApi.TFS_ORGANIZATION_URL)
 
-        return AdoApi.GetTest(connection, querypath)
+        return AdoApi.GetTest(connection, querypath, AdoApi.SaMBa)
 
     @staticmethod
     def GetWorkItem(connection, workitemid):
@@ -144,13 +131,12 @@ class AdoApi(object):
         return cycle_times
 
     @staticmethod
-    def GetCycleTimeFromUserStoryQuery(connection, querypath):
+    def GetCycleTimeFromUserStoryQuery(connection, querypath, projectname):
         # get work item tracking client
         work_item_tracking = connection.clients.get_work_item_tracking_client()
 
         # Get query
-        get_query_response = work_item_tracking.get_query(
-            AdoApi.PROJECT_NAME, querypath)
+        get_query_response = work_item_tracking.get_query(projectname, querypath)
         id = get_query_response.id
 
         # Get data
@@ -176,7 +162,7 @@ class AdoApi(object):
         # Create a connection to the org
         connection = AdoApi._get_connection(token, AdoApi.ADO_ORGANIZATION_URL)
 
-        return AdoApi.GetCycleTimeFromUserStoryQuery(connection, querypath)
+        return AdoApi.GetCycleTimeFromUserStoryQuery(connection, querypath, AdoApi.PROJECT_NAME)
 
     @staticmethod
     def ConvertToPoints(total_seconds):
@@ -259,13 +245,12 @@ class AdoApi(object):
         return story_points
 
     @staticmethod
-    def GetAtfStorySizeFromUserStoryQuery(connection, querypath):
+    def GetAtfStorySizeFromUserStoryQuery(connection, querypath, projectname):
         # get work item tracking client
         work_item_tracking = connection.clients.get_work_item_tracking_client()
 
         # Get query
-        get_query_response = work_item_tracking.get_query(
-            AdoApi.PROJECT_NAME, querypath)
+        get_query_response = work_item_tracking.get_query(projectname, querypath)
         id = get_query_response.id
 
         # Get data
@@ -291,4 +276,11 @@ class AdoApi(object):
         # Create a connection to the org
         connection = AdoApi._get_connection(token, AdoApi.ADO_ORGANIZATION_URL)
 
-        return AdoApi.GetAtfStorySizeFromUserStoryQuery(connection, querypath)
+        return AdoApi.GetAtfStorySizeFromUserStoryQuery(connection, querypath, AdoApi.PROJECT_NAME)
+
+    @staticmethod
+    def TfsGetAtfStorySizeFromUserStoryQuery(token, querypath):
+        # create connection
+        connection = AdoApi._get_connection(token, AdoApi.TFS_ORGANIZATION_URL)
+
+        return AdoApi.GetAtfStorySizeFromUserStoryQuery(connection, querypath, AdoApi.SaMBa)

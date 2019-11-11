@@ -53,6 +53,15 @@ def get_aft_story_points():
     response = flask.Response(encoder.encode(result), mimetype="application/json")
     return response
 
+@app.route(tfs_base_route+"/v1.0/atfstorypoints", methods=["POST"])
+def get_tfs_aft_story_points():
+    token = flask.request.json["token"]
+    querypath = flask.request.json["path"]
+    result = adoapi.AdoApi.TfsGetAtfStorySizeFromUserStoryQuery(token, querypath)
+    encoder = story_point_data_jsonencoder.StoryPointDataJSONEncoder()
+    response = flask.Response(encoder.encode(result), mimetype="application/json")
+    return response
+
 @app.route(tfs_base_route+"/v1.0/workitem", methods=["POST"])
 def get_tfs_workitem():
     token = flask.request.json["token"]
