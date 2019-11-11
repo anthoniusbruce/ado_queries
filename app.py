@@ -15,10 +15,17 @@ def index():
     return "Status: Up!"
 
 @app.route(ado_base_route + "/v1.0/test", methods = ["POST"])
-def get_onbalance_story_and_task_history():
+def get_test():
     querypath = flask.request.json["path"]
     token = flask.request.json["token"]
     history = adoapi.AdoApi.AdoGetTest(token, querypath)
+    return flask.jsonify(history)
+    
+@app.route(tfs_base_route + "/v1.0/test", methods = ["POST"])
+def get_tfs_test():
+    querypath = flask.request.json["path"]
+    token = flask.request.json["token"]
+    history = adoapi.AdoApi.TfsGetTest(token, querypath)
     return flask.jsonify(history)
     
 @app.route(ado_base_route+"/v1.0/workitem", methods=["POST"])

@@ -29,7 +29,9 @@ class AdoApi(object):
         # Get data
         query_by_id_response = work_item_tracking.query_by_id(id)
 
-        return work_item_tracking._serialize.body(query_by_id_response, 'WorkItemQueryResult')
+        get_work_items_response = work_item_tracking.get_work_item(query_by_id_response.work_items[0].id, expand="Relations")
+
+        return work_item_tracking._serialize.body(get_work_items_response.relations[0], 'WorkItemRelation')
 
     @staticmethod
     def AdoGetTest(token, querypath):
@@ -190,7 +192,7 @@ class AdoApi(object):
         return story_points
 
     @staticmethod
-    def GetStoryPoints(story_points, ids, work_item_tracking):
+    def GetAdoStoryPoints(story_points, ids, work_item_tracking):
         WorkItemTypeKey = "System.WorkItemType"
         CreatedDateKey = "System.CreatedDate"
         ClosedDateKey = "Microsoft.VSTS.Common.ClosedDate"
@@ -245,7 +247,62 @@ class AdoApi(object):
         return story_points
 
     @staticmethod
-    def GetAtfStorySizeFromUserStoryQuery(connection, querypath, projectname):
+    def GetTfsStoryPoints(story_points, ids, work_item_tracking):
+        WorkItemTypeKey = "System.WorkItemType"
+        CreatedDateKey = "System.CreatedDate"
+        ClosedDateKey = "Microsoft.VSTS.Common.ClosedDate"
+        ClosedByKey = "Microsoft.VSTS.Common.ClosedBy"
+        StateKey = "System.State"
+
+        if (len(ids) == 0):
+            return story_points
+
+        get_work_items_response = work_item_tracking.get_work_items(ids, expand="Relations")
+        for wrk_tm in get_work_items_response:
+            wrk_tm_hstry = work_item_tracking.get_updates(wrk_tm.id)
+            cycle = AdoApi.PrepWorkItem(wrk_tm, wrk_tm_hstry)
+            points = story_point_data.StoryPointData(cycle.workitemid, cycle.firstactive, cycle.resolved)
+
+            task_ids = []
+            for related in wrk_tm.relations:
+                if (related.rel == "System.LinkTypes.Hierarchy-Forward"):
+                    segments = related.url.split("/")
+                    task_ids.append(segments.pop())
+
+            if (len(task_ids) > 0):
+                tasks = work_item_tracking.get_work_items(task_ids)
+                task_dates = {}
+                for task in tasks:
+                    if (task.fields[WorkItemTypeKey] == "Task" and task.fields[StateKey] == "Closed"):
+                            created_date = task.fields[CreatedDateKey]
+                            closed_date = task.fields[ClosedDateKey]
+                            closed_by = task.fields[ClosedByKey]
+                            task_dates.setdefault(closed_by,[]).append(task_extents.TaskExtents(created_date, closed_date))
+                
+                points_total = datetime.timedelta(0)
+                for key in task_dates:
+                    for extents in task_dates[key]:
+                        start_date = points.firstactive
+                        if (extents.created_date > start_date):
+                            start_date = extents.created_date
+                        if (start_date.find(".") == -1):
+                            start_date = start_date.replace("Z", ".0Z")
+                        resolved_date = extents.closed_date
+                        if (resolved_date.find(".") ==  -1):
+                            resolved_date = resolved_date.replace("Z", ".0Z")
+                        date_resolved = datetime.datetime.strptime(resolved_date, '%Y-%m-%dT%H:%M:%S.%fZ')
+                        date_activated = datetime.datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
+                        if (date_resolved > date_activated):
+                            points_total =  points_total + (date_resolved - date_activated)
+
+                points.storypoints = AdoApi.ConvertToPoints(points_total.total_seconds())
+
+            story_points.append(points)
+
+        return story_points
+
+    @staticmethod
+    def GetAtfStorySizeFromUserStoryQuery(connection, querypath, projectname, GetStoryPoints):
         # get work item tracking client
         work_item_tracking = connection.clients.get_work_item_tracking_client()
 
@@ -265,9 +322,10 @@ class AdoApi(object):
 
             if (count == 200):
                 count = 0
-                story_points = AdoApi.GetStoryPoints(story_points, ids, work_item_tracking)
+                story_points = GetStoryPoints(story_points, ids, work_item_tracking)
+                ids = []
 
-        story_points = AdoApi.GetStoryPoints(story_points, ids, work_item_tracking)
+        story_points = GetStoryPoints(story_points, ids, work_item_tracking)
 
         return story_points
 
@@ -276,11 +334,11 @@ class AdoApi(object):
         # Create a connection to the org
         connection = AdoApi._get_connection(token, AdoApi.ADO_ORGANIZATION_URL)
 
-        return AdoApi.GetAtfStorySizeFromUserStoryQuery(connection, querypath, AdoApi.PROJECT_NAME)
+        return AdoApi.GetAtfStorySizeFromUserStoryQuery(connection, querypath, AdoApi.PROJECT_NAME, AdoApi.GetAdoStoryPoints)
 
     @staticmethod
     def TfsGetAtfStorySizeFromUserStoryQuery(token, querypath):
         # create connection
         connection = AdoApi._get_connection(token, AdoApi.TFS_ORGANIZATION_URL)
 
-        return AdoApi.GetAtfStorySizeFromUserStoryQuery(connection, querypath, AdoApi.SaMBa)
+        return AdoApi.GetAtfStorySizeFromUserStoryQuery(connection, querypath, AdoApi.SaMBa, AdoApi.GetTfsStoryPoints)
