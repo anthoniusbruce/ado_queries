@@ -4,6 +4,7 @@ class StoryPointData(object):
         self.firstactive= firstactive
         self.resolved = resolved
         self.storypoints = 0
+        self.resolvers = set()
 
     def __repr__(self):
         return "<workitemid:%s firstactive:%s resolved:%s storypoints:%s>\n" % (self.workitemid, self.firstactive, self.resolved, self.storypoints)

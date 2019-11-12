@@ -226,6 +226,7 @@ class AdoApi(object):
                 
                 points_total = datetime.timedelta(0)
                 for key in task_dates:
+                    points.resolvers.add(key)
                     for extents in task_dates[key]:
                         start_date = points.firstactive
                         if (extents.created_date > start_date):
