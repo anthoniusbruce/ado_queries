@@ -4,7 +4,7 @@ import cycle_time
 import story_point_data
 import task_extents
 import datetime
-import aft_velocity_response
+import atf_velocity_response
 import velocity_values
 import calendar
 
@@ -372,7 +372,7 @@ class AdoApi(object):
             yearmonth = yearmonths.get(key)
             total_story_points = yearmonth.story_points
             number_of_closers = len(yearmonth.closers)
-            response.append(aft_velocity_response.AtfVelocityResponse(year, month, total_story_points, number_of_closers))
+            response.append(atf_velocity_response.AtfVelocityResponse(year, month, total_story_points, number_of_closers))
 
         return response
 
