@@ -91,6 +91,30 @@
         }
       }
     },
+    "/ado_queries/api/v1.0/atfvelocity": {
+      "post": {
+        "summary": "With a story query, will return a list of month, story points, number of people closing tasks, and story points / number of closers",
+        "requestBody": {
+          "description": "ADO Query Request POST Object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/queryRequestPostBody"
+              }
+            }
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/ado_queries/api/v1.0/history": {
       "post": {
         "summary": "Returns the history of a work item",

@@ -4,6 +4,9 @@ import cycle_time
 import story_point_data
 import task_extents
 import datetime
+import aft_velocity_response
+import velocity_values
+import calendar
 
 class AdoApi(object):
     ADO_ORGANIZATION_URL = 'https://dev.azure.com/tr-tax'
@@ -113,9 +116,11 @@ class AdoApi(object):
         cycle = cycle_time.CycleTime(work_item.id, "", "")
         ResolvedDateKey ="Microsoft.VSTS.Common.ResolvedDate"
         if (not work_item.fields is None and ResolvedDateKey in work_item.fields):
-            cycle.resolved = work_item.fields[ResolvedDateKey]
+            cycle.resolved = AdoApi._convert_str_to_date(work_item.fields[ResolvedDateKey])
+        else:
+            cycle.resolved = datetime.datetime.min
 
-        cycle.firstactive = AdoApi.GetFirstActivatedDate(work_item_history)
+        cycle.firstactive = AdoApi._convert_str_to_date(AdoApi.GetFirstActivatedDate(work_item_history))
 
         return cycle
 
@@ -219,25 +224,20 @@ class AdoApi(object):
                 task_dates = {}
                 for task in tasks:
                     if (task.fields[WorkItemTypeKey] == "Task" and task.fields[StateKey] == "Closed"):
-                            created_date = task.fields[CreatedDateKey]
-                            closed_date = task.fields[ClosedDateKey]
+                            created_date = AdoApi._convert_str_to_date(task.fields[CreatedDateKey])
+                            closed_date = AdoApi._convert_str_to_date(task.fields[ClosedDateKey])
                             closed_by = task.fields[ClosedByKey]["displayName"]
                             task_dates.setdefault(closed_by,[]).append(task_extents.TaskExtents(created_date, closed_date))
                 
                 points_total = datetime.timedelta(0)
                 for key in task_dates:
-                    points.resolvers.add(key)
+                    points.closers.add(key)
                     for extents in task_dates[key]:
-                        start_date = points.firstactive
-                        if (extents.created_date > start_date):
-                            start_date = extents.created_date
-                        if (start_date.find(".") == -1):
-                            start_date = start_date.replace("Z", ".0Z")
-                        resolved_date = extents.closed_date
-                        if (resolved_date.find(".") ==  -1):
-                            resolved_date = resolved_date.replace("Z", ".0Z")
-                        date_resolved = datetime.datetime.strptime(resolved_date, '%Y-%m-%dT%H:%M:%S.%fZ')
-                        date_activated = datetime.datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
+                        start_date = extents.created_date
+                        if (points.firstactive > start_date):
+                            start_date = points.firstactive
+                        date_resolved = extents.closed_date
+                        date_activated = start_date
                         if (date_resolved > date_activated):
                             points_total =  points_total + (date_resolved - date_activated)
 
@@ -246,6 +246,13 @@ class AdoApi(object):
             story_points.append(points)
 
         return story_points
+
+    @staticmethod 
+    def _convert_str_to_date(strdate):
+        if (strdate.find(".") ==  -1):
+            strdate = strdate.replace("Z", ".0Z")
+        return datetime.datetime.strptime(strdate, '%Y-%m-%dT%H:%M:%S.%fZ')
+
 
     @staticmethod
     def GetTfsStoryPoints(story_points, ids, work_item_tracking):
@@ -275,25 +282,20 @@ class AdoApi(object):
                 task_dates = {}
                 for task in tasks:
                     if (task.fields[WorkItemTypeKey] == "Task" and task.fields[StateKey] == "Closed"):
-                            created_date = task.fields[CreatedDateKey]
-                            closed_date = task.fields[ClosedDateKey]
+                            created_date = AdoApi._convert_str_to_date(task.fields[CreatedDateKey])
+                            closed_date = AdoApi._convert_str_to_date(task.fields[ClosedDateKey])
                             closed_by = task.fields[ClosedByKey]
                             task_dates.setdefault(closed_by,[]).append(task_extents.TaskExtents(created_date, closed_date))
                 
                 points_total = datetime.timedelta(0)
                 for key in task_dates:
-                    points.resolvers.add(key)
+                    points.closers.add(key)
                     for extents in task_dates[key]:
-                        start_date = points.firstactive
-                        if (extents.created_date > start_date):
-                            start_date = extents.created_date
-                        if (start_date.find(".") == -1):
-                            start_date = start_date.replace("Z", ".0Z")
-                        resolved_date = extents.closed_date
-                        if (resolved_date.find(".") ==  -1):
-                            resolved_date = resolved_date.replace("Z", ".0Z")
-                        date_resolved = datetime.datetime.strptime(resolved_date, '%Y-%m-%dT%H:%M:%S.%fZ')
-                        date_activated = datetime.datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
+                        start_date = extents.created_date
+                        if (points.firstactive > start_date):
+                            start_date = points.firstactive
+                        date_resolved = extents.closed_date
+                        date_activated = start_date
                         if (date_resolved > date_activated):
                             points_total =  points_total + (date_resolved - date_activated)
 
@@ -344,3 +346,46 @@ class AdoApi(object):
         connection = AdoApi._get_connection(token, AdoApi.TFS_ORGANIZATION_URL)
 
         return AdoApi.GetAtfStorySizeFromUserStoryQuery(connection, querypath, AdoApi.SaMBa, AdoApi.GetTfsStoryPoints)
+
+    @staticmethod 
+    def GetAtfVelocityMonthlyData(connection, querypath, projectname, GetStoryPoints):
+        story_points = AdoApi.GetAtfStorySizeFromUserStoryQuery(connection, querypath, projectname, GetStoryPoints)
+        yearmonths = {}
+
+        for story in story_points:
+            year = story.resolved.year
+            month = calendar.month_name[story.resolved.month]
+            yearmonth = "{}%{}".format(year, month)
+            item = yearmonths.get(yearmonth)
+            if (item is None):
+                velocity = velocity_values.VelocityValues(story.storypoints, story.closers)
+                yearmonths.update({yearmonth:velocity})
+            else:
+                item.add(story.storypoints, story.closers)
+                yearmonths.update({yearmonth:item})
+
+        response = []
+        for key in yearmonths.keys():
+            keyvalues = key.split("%")
+            year = keyvalues[0]
+            month = keyvalues[1]
+            yearmonth = yearmonths.get(key)
+            total_story_points = yearmonth.story_points
+            number_of_closers = len(yearmonth.closers)
+            response.append(aft_velocity_response.AtfVelocityResponse(year, month, total_story_points, number_of_closers))
+
+        return response
+
+    @staticmethod
+    def AdoGetAtfVelocityMonthlyData(token, querypath):
+        # Create a connection to the org
+        connection = AdoApi._get_connection(token, AdoApi.ADO_ORGANIZATION_URL)
+
+        return AdoApi.GetAtfVelocityMonthlyData(connection, querypath, AdoApi.PROJECT_NAME, AdoApi.GetAdoStoryPoints)
+
+    @staticmethod
+    def TfsGetAtfVelocityMonthlyData(token, querypath):
+        # create connection
+        connection = AdoApi._get_connection(token, AdoApi.TFS_ORGANIZATION_URL)
+
+        return AdoApi.GetAtfVelocityMonthlyData(connection, querypath, AdoApi.SaMBa, AdoApi.GetTfsStoryPoints)

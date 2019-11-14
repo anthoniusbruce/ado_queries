@@ -69,6 +69,24 @@ def get_tfs_aft_story_points():
     response = flask.Response(encoder.encode(result), mimetype="application/json")
     return response
 
+@app.route(ado_base_route+"/v1.0/atfvelocity", methods=["POST"])
+def get_aft_velocity():
+    token = flask.request.json["token"]
+    querypath = flask.request.json["path"]
+    result = adoapi.AdoApi.AdoGetAtfVelocityMonthlyData(token, querypath)
+    encoder = story_point_data_jsonencoder.StoryPointDataJSONEncoder()
+    response = flask.Response(encoder.encode(result), mimetype="application/json")
+    return response
+
+@app.route(tfs_base_route+"/v1.0/atfvelocity", methods=["POST"])
+def get_tfs_aft_velocity():
+    token = flask.request.json["token"]
+    querypath = flask.request.json["path"]
+    result = adoapi.AdoApi.TfsGetAtfVelocityMonthlyData(token, querypath)
+    encoder = story_point_data_jsonencoder.StoryPointDataJSONEncoder()
+    response = flask.Response(encoder.encode(result), mimetype="application/json")
+    return response
+
 @app.route(tfs_base_route+"/v1.0/workitem", methods=["POST"])
 def get_tfs_workitem():
     token = flask.request.json["token"]
