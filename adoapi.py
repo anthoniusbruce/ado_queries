@@ -12,7 +12,6 @@ class AdoApi(object):
     ADO_ORGANIZATION_URL = 'https://dev.azure.com/tr-tax'
     TFS_ORGANIZATION_URL = 'http://tfstta.int.thomsonreuters.com:8080/tfs/DefaultCollection'
     PROJECT_NAME = "TaxProf"
-    SaMBa = "SaMBa"
 
     @staticmethod
     def _get_connection(token, org):
@@ -44,11 +43,11 @@ class AdoApi(object):
         return AdoApi.GetTest(connection, querypath, AdoApi.PROJECT_NAME)
 
     @staticmethod
-    def TfsGetTest(token, querypath):
+    def TfsGetTest(token, querypath, projectname):
         # Create a connection to the org
         connection = AdoApi._get_connection(token, AdoApi.TFS_ORGANIZATION_URL)
 
-        return AdoApi.GetTest(connection, querypath, AdoApi.SaMBa)
+        return AdoApi.GetTest(connection, querypath, projectname)
 
     @staticmethod
     def GetWorkItem(connection, workitemid):
@@ -114,11 +113,18 @@ class AdoApi(object):
     @staticmethod
     def PrepWorkItem(work_item, work_item_history):
         cycle = cycle_time.CycleTime(work_item.id, "", "")
-        ResolvedDateKey ="Microsoft.VSTS.Common.ResolvedDate"
+        ResolvedDateKey = "Microsoft.VSTS.Common.ResolvedDate"
+        ClosedDateKey = "Microsoft.VSTS.Common.ClosedDate"
+        ChangedDateKey = "System.ChangedDate"
         if (not work_item.fields is None and ResolvedDateKey in work_item.fields):
             cycle.resolved = AdoApi._convert_str_to_date(work_item.fields[ResolvedDateKey])
+        elif (not work_item.fields is None and ClosedDateKey in work_item.fields):
+            cycle.resolved = AdoApi._convert_str_to_date(work_item.fields[ClosedDateKey])
+        elif (not work_item.fields is None and ChangedDateKey in work_item.fields):
+            cycle.resolved = AdoApi._convert_str_to_date(work_item.fields[ChangedDateKey])
         else:
             cycle.resolved = datetime.datetime.min
+            print("workitemid:{}".format(work_item.id))
 
         cycle.firstactive = AdoApi._convert_str_to_date(AdoApi.GetFirstActivatedDate(work_item_history))
 
@@ -214,10 +220,11 @@ class AdoApi(object):
             points = story_point_data.StoryPointData(cycle.workitemid, cycle.firstactive, cycle.resolved)
 
             task_ids = []
-            for related in wrk_tm.relations:
-                if (related.attributes["name"] == "Child"):
-                    segments = related.url.split("/")
-                    task_ids.append(segments.pop())
+            if (wrk_tm.relations != None):
+                for related in wrk_tm.relations:
+                    if (related.attributes["name"] == "Child"):
+                        segments = related.url.split("/")
+                        task_ids.append(segments.pop())
 
             if (len(task_ids) > 0):
                 tasks = work_item_tracking.get_work_items(task_ids)
@@ -272,10 +279,11 @@ class AdoApi(object):
             points = story_point_data.StoryPointData(cycle.workitemid, cycle.firstactive, cycle.resolved)
 
             task_ids = []
-            for related in wrk_tm.relations:
-                if (related.rel == "System.LinkTypes.Hierarchy-Forward"):
-                    segments = related.url.split("/")
-                    task_ids.append(segments.pop())
+            if (wrk_tm.relations != None):
+                for related in wrk_tm.relations:
+                    if (related.rel == "System.LinkTypes.Hierarchy-Forward"):
+                        segments = related.url.split("/")
+                        task_ids.append(segments.pop())
 
             if (len(task_ids) > 0):
                 tasks = work_item_tracking.get_work_items(task_ids)
@@ -341,11 +349,11 @@ class AdoApi(object):
         return AdoApi.GetAtfStorySizeFromUserStoryQuery(connection, querypath, AdoApi.PROJECT_NAME, AdoApi.GetAdoStoryPoints)
 
     @staticmethod
-    def TfsGetAtfStorySizeFromUserStoryQuery(token, querypath):
+    def TfsGetAtfStorySizeFromUserStoryQuery(token, querypath, projectname):
         # create connection
         connection = AdoApi._get_connection(token, AdoApi.TFS_ORGANIZATION_URL)
 
-        return AdoApi.GetAtfStorySizeFromUserStoryQuery(connection, querypath, AdoApi.SaMBa, AdoApi.GetTfsStoryPoints)
+        return AdoApi.GetAtfStorySizeFromUserStoryQuery(connection, querypath, projectname, AdoApi.GetTfsStoryPoints)
 
     @staticmethod 
     def GetAtfVelocityMonthlyData(connection, querypath, projectname, GetStoryPoints):
@@ -354,6 +362,8 @@ class AdoApi(object):
 
         for story in story_points:
             year = story.resolved.year
+            if (year == 1):
+                print("item:{} year:{} resolved:{}".format(story.workitemid, year, story.resolved))
             month = calendar.month_name[story.resolved.month]
             yearmonth = "{}%{}".format(year, month)
             item = yearmonths.get(yearmonth)
@@ -384,8 +394,8 @@ class AdoApi(object):
         return AdoApi.GetAtfVelocityMonthlyData(connection, querypath, AdoApi.PROJECT_NAME, AdoApi.GetAdoStoryPoints)
 
     @staticmethod
-    def TfsGetAtfVelocityMonthlyData(token, querypath):
+    def TfsGetAtfVelocityMonthlyData(token, querypath, projectname):
         # create connection
         connection = AdoApi._get_connection(token, AdoApi.TFS_ORGANIZATION_URL)
 
-        return AdoApi.GetAtfVelocityMonthlyData(connection, querypath, AdoApi.SaMBa, AdoApi.GetTfsStoryPoints)
+        return AdoApi.GetAtfVelocityMonthlyData(connection, querypath, projectname, AdoApi.GetTfsStoryPoints)
