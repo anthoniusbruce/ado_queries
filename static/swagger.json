@@ -163,6 +163,30 @@
         }
       }
     },
+    "/historical_queries/api/v1.0/cycletime": {
+      "post": {
+        "summary": "Cycle time data from passed in query",
+        "requestBody": {
+          "description": "With a story query, will return a list of work item id, resolved date and first activated date for every story returned by the query. Works  on tr-tax-default organization.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/queryHistoricRequestPostBody"
+              }
+            }
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/historical_queries/api/v1.0/atfstorypoints": {
       "post": {
         "summary": "Story points results for all stories in the query",
