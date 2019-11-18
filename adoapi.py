@@ -9,9 +9,8 @@ import velocity_values
 import calendar
 
 class AdoApi(object):
-    ADO_ORGANIZATION_URL = 'https://dev.azure.com/tr-tax'
+    ADO_URL = 'https://dev.azure.com/{}'
     TFS_ORGANIZATION_URL = 'http://tfstta.int.thomsonreuters.com:8080/tfs/DefaultCollection'
-    PROJECT_NAME = "TaxProf"
 
     @staticmethod
     def _get_connection(token, org):
@@ -36,11 +35,11 @@ class AdoApi(object):
         return work_item_tracking._serialize.body(get_work_items_response.relations[0], 'WorkItemRelation')
 
     @staticmethod
-    def AdoGetTest(token, querypath):
+    def AdoGetTest(token, querypath, projectname, organization):
         # Create a connection to the org
-        connection = AdoApi._get_connection(token, AdoApi.ADO_ORGANIZATION_URL)
+        connection = AdoApi._get_connection(token, AdoApi.ADO_URL.format(organization))
 
-        return AdoApi.GetTest(connection, querypath, AdoApi.PROJECT_NAME)
+        return AdoApi.GetTest(connection, querypath, projectname)
 
     @staticmethod
     def TfsGetTest(token, querypath, projectname):
@@ -60,9 +59,9 @@ class AdoApi(object):
         return work_item_tracking._serialize.body(work_item_response, 'WorkItem')
 
     @staticmethod
-    def AdoGetWorkItem(token, workitemid):
+    def AdoGetWorkItem(token, workitemid, organization):
         # create connection
-        connection = AdoApi._get_connection(token, AdoApi.ADO_ORGANIZATION_URL)
+        connection = AdoApi._get_connection(token, AdoApi.ADO_URL.format(organization))
 
         return AdoApi.GetWorkItem(connection, workitemid)
 
@@ -84,9 +83,9 @@ class AdoApi(object):
         return work_item_tracking._serialize.body(get_updates_response, '[WorkItemUpdate]')
 
     @staticmethod
-    def AdoGetWorkItemHistory(token, workitemid):
+    def AdoGetWorkItemHistory(token, workitemid, organization):
         # create connection
-        connection = AdoApi._get_connection(token, AdoApi.ADO_ORGANIZATION_URL)
+        connection = AdoApi._get_connection(token, AdoApi.ADO_URL.format(organization))
 
         return AdoApi.GetWorkItemHistory(connection, workitemid)
 
@@ -171,11 +170,11 @@ class AdoApi(object):
         return cycle_times
 
     @staticmethod
-    def AdoGetCycleTimeFromUserStoryQuery(token, querypath):
+    def AdoGetCycleTimeFromUserStoryQuery(token, querypath, projectname, organization):
         # Create a connection to the org
-        connection = AdoApi._get_connection(token, AdoApi.ADO_ORGANIZATION_URL)
+        connection = AdoApi._get_connection(token, AdoApi.ADO_URL.format(organization))
 
-        return AdoApi.GetCycleTimeFromUserStoryQuery(connection, querypath, AdoApi.PROJECT_NAME)
+        return AdoApi.GetCycleTimeFromUserStoryQuery(connection, querypath, projectname)
 
     @staticmethod
     def ConvertToPoints(total_seconds):
@@ -342,11 +341,11 @@ class AdoApi(object):
         return story_points
 
     @staticmethod
-    def AdoGetAtfStorySizeFromUserStoryQuery(token, querypath):
+    def AdoGetAtfStorySizeFromUserStoryQuery(token, querypath, projectname, organization):
         # Create a connection to the org
-        connection = AdoApi._get_connection(token, AdoApi.ADO_ORGANIZATION_URL)
+        connection = AdoApi._get_connection(token, AdoApi.ADO_URL.format(organization))
 
-        return AdoApi.GetAtfStorySizeFromUserStoryQuery(connection, querypath, AdoApi.PROJECT_NAME, AdoApi.GetAdoStoryPoints)
+        return AdoApi.GetAtfStorySizeFromUserStoryQuery(connection, querypath, projectname, AdoApi.GetAdoStoryPoints)
 
     @staticmethod
     def TfsGetAtfStorySizeFromUserStoryQuery(token, querypath, projectname):
@@ -387,11 +386,11 @@ class AdoApi(object):
         return response
 
     @staticmethod
-    def AdoGetAtfVelocityMonthlyData(token, querypath):
+    def AdoGetAtfVelocityMonthlyData(token, querypath, projectname, organization):
         # Create a connection to the org
-        connection = AdoApi._get_connection(token, AdoApi.ADO_ORGANIZATION_URL)
+        connection = AdoApi._get_connection(token, AdoApi.ADO_URL.format(organization))
 
-        return AdoApi.GetAtfVelocityMonthlyData(connection, querypath, AdoApi.PROJECT_NAME, AdoApi.GetAdoStoryPoints)
+        return AdoApi.GetAtfVelocityMonthlyData(connection, querypath, projectname, AdoApi.GetAdoStoryPoints)
 
     @staticmethod
     def TfsGetAtfVelocityMonthlyData(token, querypath, projectname):
