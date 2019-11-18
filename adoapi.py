@@ -165,6 +165,7 @@ class AdoApi(object):
             if (count == 200):
                 count = 0
                 cycle_times = AdoApi.GetCycleTimes(cycle_times, ids, work_item_tracking)
+                ids = []
 
         cycle_times = AdoApi.GetCycleTimes(cycle_times, ids, work_item_tracking)
 
@@ -176,6 +177,13 @@ class AdoApi(object):
         connection = AdoApi._get_connection(token, AdoApi.ADO_ORGANIZATION_URL)
 
         return AdoApi.GetCycleTimeFromUserStoryQuery(connection, querypath, AdoApi.PROJECT_NAME)
+
+    @staticmethod
+    def HistoricalGetCycleTimeFromUserStoryQuery(token, querypath, projectname):
+        # Create a connection to the org
+        connection = AdoApi._get_connection(token, AdoApi.ADO_HISTORICAL_URL)
+
+        return AdoApi.GetCycleTimeFromUserStoryQuery(connection, querypath, projectname)
 
     @staticmethod
     def ConvertToPoints(total_seconds):

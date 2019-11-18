@@ -52,6 +52,16 @@ def get_cycle_time():
     response = flask.Response(encoder.encode(result), mimetype="application/json")
     return response
 
+@app.route(ADO_HISTORICAL_ROUTE+"/v1.0/cycletime", methods=["POST"])
+def get_historical_cycle_time():
+    token = flask.request.json["token"]
+    querypath = flask.request.json["path"]
+    project = flask.request.json["project"]
+    result = adoapi.AdoApi.HistoricalGetCycleTimeFromUserStoryQuery(token, querypath, project)
+    encoder = cycle_time_jsonencoder.CycleTimeJSONEncoder()
+    response = flask.Response(encoder.encode(result), mimetype="application/json")
+    return response
+
 @app.route(ADO_BASE_ROUTE+"/v1.0/atfstorypoints", methods=["POST"])
 def get_aft_story_points():
     token = flask.request.json["token"]
