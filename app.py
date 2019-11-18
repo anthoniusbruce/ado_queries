@@ -2,8 +2,7 @@ import flask
 import adoapi
 import cycle_time
 import story_point_data
-import cycle_time_jsonencoder
-import story_point_data_jsonencoder
+import ado_jsonencoder
 from flask_swagger_ui import get_swaggerui_blueprint
 
 app = flask.Flask(__name__)
@@ -48,7 +47,7 @@ def get_cycle_time():
     token = flask.request.json["token"]
     querypath = flask.request.json["path"]
     result = adoapi.AdoApi.AdoGetCycleTimeFromUserStoryQuery(token, querypath)
-    encoder = cycle_time_jsonencoder.CycleTimeJSONEncoder()
+    encoder = ado_jsonencoder.AdoJSONEncoder()
     response = flask.Response(encoder.encode(result), mimetype="application/json")
     return response
 
@@ -58,7 +57,7 @@ def get_historical_cycle_time():
     querypath = flask.request.json["path"]
     project = flask.request.json["project"]
     result = adoapi.AdoApi.HistoricalGetCycleTimeFromUserStoryQuery(token, querypath, project)
-    encoder = cycle_time_jsonencoder.CycleTimeJSONEncoder()
+    encoder = ado_jsonencoder.AdoJSONEncoder()
     response = flask.Response(encoder.encode(result), mimetype="application/json")
     return response
 
@@ -67,7 +66,7 @@ def get_aft_story_points():
     token = flask.request.json["token"]
     querypath = flask.request.json["path"]
     result = adoapi.AdoApi.AdoGetAtfStorySizeFromUserStoryQuery(token, querypath)
-    encoder = story_point_data_jsonencoder.StoryPointDataJSONEncoder()
+    encoder = ado_jsonencoder.AdoJSONEncoder()
     response = flask.Response(encoder.encode(result), mimetype="application/json")
     return response
 
@@ -77,7 +76,7 @@ def get_historical_aft_story_points():
     querypath = flask.request.json["path"]
     project = flask.request.json["project"]
     result = adoapi.AdoApi.HistoricalGetAtfStorySizeFromUserStoryQuery(token, querypath, project)
-    encoder = story_point_data_jsonencoder.StoryPointDataJSONEncoder()
+    encoder = ado_jsonencoder.AdoJSONEncoder()
     response = flask.Response(encoder.encode(result), mimetype="application/json")
     return response
 
@@ -86,7 +85,7 @@ def get_aft_velocity():
     token = flask.request.json["token"]
     querypath = flask.request.json["path"]
     result = adoapi.AdoApi.AdoGetAtfVelocityMonthlyData(token, querypath)
-    encoder = story_point_data_jsonencoder.StoryPointDataJSONEncoder()
+    encoder = ado_jsonencoder.AdoJSONEncoder()
     response = flask.Response(encoder.encode(result), mimetype="application/json")
     return response
 
@@ -96,7 +95,7 @@ def get_ado_default_aft_velocity():
     querypath = flask.request.json["path"]
     project = flask.request.json["project"]
     result = adoapi.AdoApi.HistoricalGetAtfVelocityMonthlyData(token, querypath, project)
-    encoder = story_point_data_jsonencoder.StoryPointDataJSONEncoder()
+    encoder = ado_jsonencoder.AdoJSONEncoder()
     response = flask.Response(encoder.encode(result), mimetype="application/json")
     return response
 

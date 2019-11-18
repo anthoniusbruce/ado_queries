@@ -2,8 +2,9 @@ import json
 import story_point_data
 import atf_velocity_response
 import datetime
+import cycle_time
 
-class StoryPointDataJSONEncoder(json.JSONEncoder):
+class AdoJSONEncoder(json.JSONEncoder):
     def default(self, o):
         if (isinstance(o, story_point_data.StoryPointData)):
             return o.__dict__
@@ -13,5 +14,7 @@ class StoryPointDataJSONEncoder(json.JSONEncoder):
             return o.__dict__
         if (isinstance(o, datetime.datetime)):
             return str(o)
+        if (isinstance(o, cycle_time.CycleTime)):
+            return o.__dict__
 
-        return super(StoryPointDataJSONEncoder, self).default(o)
+        return super(AdoJSONEncoder, self).default(o)
