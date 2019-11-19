@@ -1,4 +1,5 @@
 from azure.devops.connection import Connection
+from azure.devops.v5_1.work_item_tracking import models
 from msrest.authentication import BasicAuthentication
 import cycle_time
 import story_point_data
@@ -7,6 +8,7 @@ import datetime
 import atf_velocity_response
 import velocity_values
 import calendar
+import velocity_and_bug_response
 
 class AdoApi(object):
     ADO_ORGANIZATION_URL = "https://dev.azure.com/tr-tax"
@@ -20,20 +22,45 @@ class AdoApi(object):
         return connection
 
     @staticmethod
+    def AddMonthFilter(year, month, query):
+        if (isinstance(month, str)):
+            month = list(calendar.month_name).index(month)
+        if (isinstance(year, str)):
+            year = int(year)
+        first_day = datetime.date(year, month, 1)
+        last_day = first_day.replace(day = calendar.monthrange(year, month)[1])
+        queryparts = query.partition(" order by ")
+        result = queryparts[0] + " and [Microsoft.VSTS.Common.ClosedDate] >= '{}' and [Microsoft.VSTS.Common.ClosedDate] <= '{}' ".format(first_day, last_day) + queryparts[1] + queryparts[2]
+        return result
+
+    @staticmethod
     def GetTest(connection, querypath, projectname):
         # get work item tracking client
         work_item_tracking = connection.clients.get_work_item_tracking_client()
 
         # Get query
-        get_query_response = work_item_tracking.get_query(projectname, querypath)
-        id = get_query_response.id
+        get_query_response = work_item_tracking.get_query(projectname, querypath, expand="wiql")
+
+        wiql = AdoApi.AddMonthFilter("2019", "April", get_query_response.wiql)
+
+        tc = models.TeamContext(project=projectname)
+        result = work_item_tracking.query_by_wiql(models.Wiql(wiql), tc)
+        #result = work_item_tracking.query_by_wiql(models.Wiql(get_query_response.wiql), tc)
+
+        #return wiql
+        #return get_query_response.wiql
+        return len(result.work_items)
+        #return work_item_tracking._serialize.body(result, "WorkItemQueryResult")
+        #id = get_query_response.id
 
         # Get data
-        query_by_id_response = work_item_tracking.query_by_id(id)
+        # query_by_id_response = work_item_tracking.query_by_id(id)
 
-        get_work_items_response = work_item_tracking.get_work_item(query_by_id_response.work_items[0].id, expand="Relations")
+        # return work_item_tracking._serialize.body(query_by_id_response, "WorkItemQueryResult")
 
-        return work_item_tracking._serialize.body(get_work_items_response.relations[0], 'WorkItemRelation')
+        # get_work_items_response = work_item_tracking.get_work_item(query_by_id_response.work_items[0].id, expand="Relations")
+
+        # return work_item_tracking._serialize.body(get_work_items_response.relations[0], 'WorkItemRelation')
 
     @staticmethod
     def AdoGetTest(token, querypath):
@@ -407,3 +434,38 @@ class AdoApi(object):
         connection = AdoApi._get_connection(token, AdoApi.ADO_HISTORICAL_URL)
 
         return AdoApi.GetAtfVelocityMonthlyData(connection, querypath, projectname, AdoApi.GetHistoricalStoryPoints)
+
+    @staticmethod
+    def GetAtfVelocityAndBugsMonthlyData(connection, velocityquery, bugquery, projectname, GetStoryPoints):
+        velocities = AdoApi.GetAtfVelocityMonthlyData(connection, velocityquery, projectname, GetStoryPoints)
+
+        work_item_tracking = connection.clients.get_work_item_tracking_client()
+        # Get bug query for modification
+        get_query_response = work_item_tracking.get_query(projectname, bugquery, expand="wiql")
+        velocities_and_bugs = []
+        for velo in velocities:
+            velo_bug = velocity_and_bug_response.VelocityAndBugResponse(velo.year, velo.month, velo.total_story_points, velo.number_of_closers, velo.average_story_points, 0)
+            
+            wiql = AdoApi.AddMonthFilter(velo.year, velo.month, get_query_response.wiql)
+
+            tc = models.TeamContext(project=projectname)
+            result = work_item_tracking.query_by_wiql(models.Wiql(wiql), tc)
+            velo_bug.bug_count = len(result.work_items)
+
+            velocities_and_bugs.append(velo_bug)
+
+        return velocities_and_bugs
+
+    @staticmethod
+    def AdoGetAtfVelocityAndBugsMonthlyData(token, velocityquery, bugquery):
+        # Create connection
+        connection = AdoApi._get_connection(token, AdoApi.ADO_ORGANIZATION_URL)
+
+        return AdoApi.GetAtfVelocityAndBugsMonthlyData(connection, velocityquery, bugquery, AdoApi.PROJECT_NAME, AdoApi.GetAdoStoryPoints)
+
+    @staticmethod
+    def HistoricalGetAtfVelocityAndBugsMonthlyData(token, velocityquery, bugquery, projectname):
+        # Create connection
+        connection = AdoApi._get_connection(token, AdoApi.ADO_HISTORICAL_URL)
+
+        return AdoApi.GetAtfVelocityAndBugsMonthlyData(connection, velocityquery, bugquery, projectname, AdoApi.GetHistoricalStoryPoints)
