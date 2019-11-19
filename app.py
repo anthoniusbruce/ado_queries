@@ -102,7 +102,7 @@ def get_ado_default_aft_velocity():
 @app.route(ADO_BASE_ROUTE+"/v1.0/atfvelocitybugs", methods=["POST"])
 def get_aft_velocity_and_bugs_created():
     token = flask.request.json["token"]
-    querypath = flask.request.json["velocity"]
+    querypath = flask.request.json["userstory"]
     bugpath = flask.request.json["bug"]
     result = adoapi.AdoApi.AdoGetAtfVelocityAndBugsMonthlyData(token, querypath, bugpath)
     encoder = ado_jsonencoder.AdoJSONEncoder()
@@ -112,7 +112,7 @@ def get_aft_velocity_and_bugs_created():
 @app.route(ADO_HISTORICAL_ROUTE+"/v1.0/atfvelocitybugs", methods=["POST"])
 def get_ado_default_aft_bugs_created():
     token = flask.request.json["token"]
-    querypath = flask.request.json["velocity"]
+    querypath = flask.request.json["userstory"]
     bugpath = flask.request.json["bug"]
     project = flask.request.json["project"]
     result = adoapi.AdoApi.HistoricalGetAtfVelocityAndBugsMonthlyData(token, querypath, bugpath, project)

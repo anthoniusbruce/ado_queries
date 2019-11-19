@@ -115,6 +115,30 @@
         }
       }
     },
+    "/ado_queries/api/v1.0/atfvelocitybugs": {
+      "post": {
+        "summary": "Velocity results from story query matched with bugs created in the same month",
+        "requestBody": {
+          "description": "With a story query, will return a list of month, story points, number of people closing tasks, and story points / number of closers and the number of bugs created in that month. Works on tr-tax organization",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/queryRequestUserStoryAndBugPostBody"
+              }
+            }
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/ado_queries/api/v1.0/history": {
       "post": {
         "summary": "Returns the history of a work item on tr-tax organization",
@@ -235,6 +259,30 @@
         }
       }
     },
+    "/historical_queries/api/v1.0/atfvelocitybugs": {
+      "post": {
+        "summary": "Velocity results from story query matched with results from a bug query",
+        "requestBody": {
+          "description": "With a story query, will return a list of month, story points, number of people closing tasks, and story points / number of closers and the number of bugs created in that month. Works on tr-tax-default organization",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/queryHistoricUserStoryAndBugRequestPostBody"
+              }
+            }
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/historical_queries/api/v1.0/history": {
       "post": {
         "summary": "Returns the history of a work item on tr-tax-default organization",
@@ -289,6 +337,25 @@
           }
         }
       },
+      "queryRequestUserStoryAndBugPostBody": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "format": "string"
+          },
+          "userstory": {
+            "type": "string",
+            "format": "string",
+            "description": "path to a query that returns user stories, i.e. My Queries/OnBalance Closed Stories"
+          },
+          "bug": {
+            "type": "string",
+            "format": "string",
+            "description": "path to a query that returns bugs"
+          }
+        }
+      },
       "queryHistoricRequestPostBody": {
         "type": "object",
         "properties": {
@@ -300,6 +367,30 @@
             "type": "string",
             "format": "string",
             "description": "path to a query that returns user stories, i.e. My Queries/OnBalance Closed Stories"
+          },
+          "project": {
+            "type": "string",
+            "format": "string",
+            "description": "the ADO project where the query resides"
+          }
+        }
+      },
+      "queryHistoricUserStoryAndBugRequestPostBody": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "format": "string"
+          },
+          "userstory": {
+            "type": "string",
+            "format": "string",
+            "description": "path to a query that returns user stories, i.e. My Queries/OnBalance Closed Stories"
+          },
+          "bug": {
+            "type": "string", 
+            "format": "string", 
+            "description": "path to a query that returns bugs"
           },
           "project": {
             "type": "string",
