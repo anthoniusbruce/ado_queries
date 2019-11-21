@@ -30,7 +30,7 @@ class AdoApi(object):
         first_day = datetime.date(year, month, 1)
         last_day = first_day.replace(day = calendar.monthrange(year, month)[1])
         queryparts = query.partition(" order by ")
-        result = queryparts[0] + " and [Microsoft.VSTS.Common.ClosedDate] >= '{}' and [Microsoft.VSTS.Common.ClosedDate] <= '{}' ".format(first_day, last_day) + queryparts[1] + queryparts[2]
+        result = queryparts[0] + " and [System.CreatedDate] >= '{}' and [System.CreatedDate] <= '{}' ".format(first_day, last_day) + queryparts[1] + queryparts[2]
         return result
 
     @staticmethod
@@ -49,8 +49,8 @@ class AdoApi(object):
 
         #return wiql
         #return get_query_response.wiql
-        return len(result.work_items)
-        #return work_item_tracking._serialize.body(result, "WorkItemQueryResult")
+        #return len(result.work_items)
+        return work_item_tracking._serialize.body(result, "WorkItemQueryResult")
         #id = get_query_response.id
 
         # Get data
