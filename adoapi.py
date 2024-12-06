@@ -11,9 +11,9 @@ import calendar
 import velocity_and_bug_response
 
 class AdoApi(object):
-    ADO_ORGANIZATION_URL = "https://dev.azure.com/tr-tax"
-    ADO_HISTORICAL_URL = "https://dev.azure.com/tr-tax-default"
-    PROJECT_NAME = "TaxProf"
+    ADO_ORGANIZATION_URL = "https://dev.azure.com/!!!!Add your organization!!!!!"
+    ADO_HISTORICAL_URL = "https://dev.azure.com/!!!!Add your second organization!!!!!"
+    PROJECT_NAME = "!!!!!!!Project name!!!!!!!"
 
     @staticmethod
     def _get_connection(token, org):
