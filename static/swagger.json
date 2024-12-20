@@ -5,7 +5,7 @@
     "version": "1.0.1",
     "title": "ado_queries",
     "contact": {
-      "email": "andy.collins@thomsonreuters.com"
+      "email": "anthonius.bruce@gmail.com"
     },
     "license": {
       "name": "MIT",
@@ -21,7 +21,7 @@
   "paths": {
     "/ado_queries/api/v1.0/workitem": {
       "post": {
-        "summary": "Returns work item data on tr-tax organization",
+        "summary": "Returns work item data on organization",
         "requestBody": {
           "description": "ADO Work Item Request POST Object",
           "required": true,
