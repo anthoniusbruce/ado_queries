@@ -148,4 +148,4 @@ app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
 ### end swagger specific ###
 
 if (__name__ == "__main__"):
-    app.run(debug=True)
+    app.run(debug=False)
